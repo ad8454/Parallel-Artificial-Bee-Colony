@@ -82,18 +82,32 @@ public class ABCSeq extends Task{
 
 			for(int i=0; i < totEmployedBees; i++){
 				double probab = totWeight * rand.nextDouble();
-				Solution pickedSoln = null;
+
+				Solution onlookerSoln = onlookerBees[i];
+				boolean picked = false;
 				for(Solution soln: employedBees){
 					probab -= soln.getFitness();
 					if(probab <= 0){
-						pickedSoln = soln;
+						onlookerSoln.setLocalSolution(soln.getLocalSolution());
+						picked = true;
 						break;
 					}
 				}
-				if(pickedSoln == null)
-					pickedSoln = employedBees[totEmployedBees - 1];
+				if(! picked) // in case of round off error, assign last solution
+					onlookerSoln.setLocalSolution(employedBees[totEmployedBees - 1].getLocalSolution());
 				
 				
+				double oldFitness = onlookerSoln.computeFitness();
+				int idx1 = rand.nextInt(onlookerSoln.getSize());
+				int idx2 = rand.nextInt(onlookerSoln.getSize());
+				onlookerSoln.swap(idx1, idx2);
+				double newFitness = onlookerSoln.computeFitness();
+				if(oldFitness > newFitness) {
+					onlookerSoln.swap(idx1, idx2); //revert
+					newFitness = oldFitness;
+				}
+				onlookerSoln.setFitness(newFitness);
+				totWeight += newFitness;
 			}
 			
 		}

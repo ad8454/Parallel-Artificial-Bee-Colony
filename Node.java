@@ -1,0 +1,11 @@
+/**
+ * Class Vertex encapsulates one vertex in a 
+ * fully connected graph.
+ *
+ * @author  Ajinkya Dhaigude
+ */
+public class Node {
+	public int id;
+	public int x;
+	public int y;
+}

@@ -26,7 +26,7 @@ class Solution implements Cloneable{
 	 *
 	 * @param  allNodes
 	 * @param  totVehicles
-	 * @param  id  
+	 * @param  id
 	 */
 	public Solution(Node allNodes[], int totVehicles, int id){
         this.id = id;
@@ -41,6 +41,7 @@ class Solution implements Cloneable{
 	}
 
 	public double computeFitness(){
+
 		double distance = 0;
 		for(int i=0; i<route.length-1; i++){
 			distance += getDistance(route[i], route[i+1]);

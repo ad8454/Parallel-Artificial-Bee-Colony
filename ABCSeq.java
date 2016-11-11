@@ -49,7 +49,8 @@ public class ABCSeq extends Task{
         // Get total vertices
         int totNodes = graph.getNodes();
         Node allNodes[] = new Node[totNodes];
-        
+
+		// Generate initial solutions
         for(int i=0; i<totEmployedBees; i++){
         	//employedBees[i] = new Bee(totNodes, totVehicles);
         	employedBees[i] = new Solution(allNodes, totVehicles, i);
@@ -72,15 +73,22 @@ public class ABCSeq extends Task{
 				localSolution.swap(idx1, idx2);
 				double newFitness = localSolution.computeFitness();
 				if(oldFitness > newFitness) {
+					// Increment the number of trials to indicate exhaustion of
+					// a food source
+					localSolution.incTrial();
+
 					localSolution.swap(idx1, idx2); //revert
-					newFitness = oldFitness;
+					newFitness = oldFitness;		//revert to old fitness
 				}
+				// reset the number of trials of solution to indicate improvement
+				localSolution.setTrial(0);
 				localSolution.setFitness(newFitness);
 				totWeight += newFitness;
 			}
 			
 
 			for(int i=0; i < totEmployedBees; i++){
+				// The roulette wheel selection
 				double probab = totWeight * rand.nextDouble();
 
 				Solution onlookerSoln = onlookerBees[i];

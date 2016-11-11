@@ -52,9 +52,9 @@ public class ABCSeq extends Task{
         
         for(int i=0; i<totEmployedBees; i++){
         	//employedBees[i] = new Bee(totNodes, totVehicles);
-        	employedBees[i] = new Solution(allNodes, totVehicles);
+        	employedBees[i] = new Solution(allNodes, totVehicles, i);
         	employedBees[i].genRandomSolution(rand);
-        	onlookerBees[i] = new Solution(allNodes, totVehicles);
+        	onlookerBees[i] = new Solution();
         }
         
         int epoch = 0;

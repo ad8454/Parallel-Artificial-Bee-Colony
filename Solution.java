@@ -19,6 +19,8 @@ class Solution implements Cloneable{
     public int id;
 
 
+	public Solution(){}
+
 	/**
 	 * Constructor to initialize shared variables.
 	 *

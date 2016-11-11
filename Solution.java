@@ -12,7 +12,7 @@ class Solution implements Cloneable{
 
     // shared variables
 	private Node route[];	// Solution path eg {0->1->2->3->0->4->5->6->0->7->8}
-	private int totNodes;	// Total nodes
+	private int totalNodes;	// Total nodes
 	private double fitness = 0;
     private int TRIAL_LIMIT = 100;
     private int trial = 0;
@@ -24,16 +24,16 @@ class Solution implements Cloneable{
 	/**
 	 * Constructor to initialize shared variables.
 	 *
-	 * @param  x  Initial value for x
-	 * @param  y  Initial value for y
-	 * @param  z  Initial value for z
+	 * @param  allNodes
+	 * @param  totVehicles
+	 * @param  id  
 	 */
 	public Solution(Node allNodes[], int totVehicles, int id){
         this.id = id;
-		totNodes = allNodes.length;
-		route = new Node[totNodes + totVehicles];
+		totalNodes = allNodes.length;
+		route = new Node[totalNodes + totVehicles];
 		for(int i=0; i<route.length; i++){
-			if(i < totNodes)
+			if(i < totalNodes)
 				route[i] = allNodes[i];
 			else
 				route[i] = allNodes[0]; 	// depot
@@ -79,7 +79,7 @@ class Solution implements Cloneable{
 	}
 
 	public int getTotNodes(){
-		return totNodes;
+		return totalNodes;
 	}
 
 	public void setIndex(int index, Node node){

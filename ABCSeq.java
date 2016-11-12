@@ -16,6 +16,7 @@ import edu.rit.util.Instance;
  * solution.
  *
  * @author  Ajinkya Dhaigude
+ * @author  Sameer Raghuram
  */
  
 public class ABCSeq extends Task{

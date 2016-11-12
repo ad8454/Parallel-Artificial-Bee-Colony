@@ -3,6 +3,7 @@
  * fully connected graph.
  *
  * @author  Ajinkya Dhaigude
+ * @author  Sameer Raghuram
  */
 public class Node {
 	public int id;

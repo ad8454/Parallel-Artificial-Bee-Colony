@@ -6,6 +6,7 @@ import java.util.Random;
  * running in parallel.
  *
  * @author  Ajinkya Dhaigude
+ * @author  Sameer Raghuram
  */
  
 class Solution implements Cloneable, Comparable<Solution>{

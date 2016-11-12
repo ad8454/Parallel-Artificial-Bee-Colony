@@ -146,7 +146,13 @@ public class ABCSeq extends Task{
 				}
 			}
 		}
-        
+
+		// Final reduction to get best solution
+		for(int i=0; i<employedBees.length; i++){
+			if(bestDiscarded.compareTo(employedBees[i])>0){
+				bestDiscarded = employedBees[i];
+			}
+		}
         
 	}
     

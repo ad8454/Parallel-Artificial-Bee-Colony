@@ -30,14 +30,14 @@ public class RandomGraph implements Graph{
 	public RandomGraph (int totNodes, int range, long seed){
 		// Verify preconditions.
 		this.totNodes = totNodes;
-		this.E = totNodes * (totNodes - 1) /2 ;
+		this.E = (totNodes * (totNodes - 1))/2 ;
 		this.range = range;
 		if (totNodes < 2)
 			throw new IllegalArgumentException (String.format
 				("RandomGraph(): V = %d illegal", totNodes));
 
 		// Initialize fields.
-		toGenerate = E;
+		toGenerate = 0;
 		prng = new Random (seed);
 	}
 
@@ -69,10 +69,10 @@ public class RandomGraph implements Graph{
 	 */
 	public void nextVertex (Node node){
 		// Verify preconditions.
-		if (toGenerate == 0)
+		if (toGenerate == totNodes)
 			throw new NoSuchElementException();
 		// TODO : might coincide
-		node.id = -- toGenerate;
+		node.id = toGenerate++;
 		node.x = prng.nextInt(range);
 		node.y = prng.nextInt(range);
 	}

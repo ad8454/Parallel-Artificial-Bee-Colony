@@ -13,7 +13,7 @@ class Solution implements Cloneable, Comparable<Solution>{
     // shared variables
 	private Node route[];	// Solution path eg {0->1->2->3->0->4->5->6->0->7->8}
 	private int totalNodes;	// Total nodes
-	private double fitness = 0;
+	private double fitness = -1;
     private int TRIAL_LIMIT = 100;
     private int trial = 0;
     public int id;
@@ -111,6 +111,7 @@ class Solution implements Cloneable, Comparable<Solution>{
 			int idx2 = rand.nextInt(route.length - 2) + 1;
 			swap(i, idx2);
 		}
+		//this.fitness = computeFitness();
 	}
 
 	/**

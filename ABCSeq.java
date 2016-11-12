@@ -28,6 +28,7 @@ public class ABCSeq extends Task{
     Random rand;
 	Solution employedBees[] = new Solution[totEmployedBees];
 	Solution onlookerBees[] = new Solution[totEmployedBees];
+	Solution bestDiscarded = new Solution();
 	
 	/**
 	 * Main program for DioEqnSeq.
@@ -129,9 +130,22 @@ public class ABCSeq extends Task{
 				onlookerSoln.setFitness(newFitness);
 				totWeight += newFitness;
 
+				// Set solution to employedbees array if better
+				if(employedBees[onlookerSoln.id].compareTo(onlookerSoln)>0){
+					employedBees[onlookerSoln.id] = onlookerSoln;
+				}
 
 			}
-			
+			// Discard any exhausted solutions
+			for(int i=0; i<employedBees.length; i++){
+				if(employedBees[i].isExhausted()){
+					// See if our discarded is the best one yet (to be discarded)
+					if(bestDiscarded.compareTo(employedBees[i])>0){
+						bestDiscarded = employedBees[i];
+					}
+					employedBees[i].genRandomSolution(rand);
+				}
+			}
 		}
         
         

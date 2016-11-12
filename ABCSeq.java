@@ -101,13 +101,14 @@ public class ABCSeq extends Task{
 				for(Solution soln: employedBees){
 					probab -= soln.getFitness();
 					if(probab <= 0){
-						onlookerSoln.setLocalSolution(soln.getLocalSolution());
+						soln.getDeepCopy(onlookerSoln);
 						picked = true;
 						break;
 					}
 				}
 				if(! picked) // in case of round off error, assign last solution
-					onlookerSoln.setLocalSolution(employedBees[totEmployedBees - 1].getLocalSolution());
+					employedBees[totEmployedBees-1].getDeepCopy(onlookerSoln);
+					//onlookerSoln.setLocalSolution(employedBees[totEmployedBees - 1].getLocalSolution());
 				
 				
 				double oldFitness = onlookerSoln.computeFitness();

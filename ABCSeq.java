@@ -134,7 +134,6 @@ public class ABCSeq extends Task{
 				if(employedBees[onlookerSoln.id].compareTo(onlookerSoln)>0){
 					employedBees[onlookerSoln.id] = onlookerSoln;
 				}
-
 			}
 			// Discard any exhausted solutions
 			for(int i=0; i<employedBees.length; i++){

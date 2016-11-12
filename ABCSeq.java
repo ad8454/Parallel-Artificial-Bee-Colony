@@ -25,7 +25,7 @@ public class ABCSeq extends Task{
 	int MAX_EPOCH = 50;
 	int totVehicles = 5;
     Graph graph = null;
-    Random rand;		//TODO: switch to pj2 maybe
+    Random rand;
 	Solution employedBees[] = new Solution[totEmployedBees];
 	Solution onlookerBees[] = new Solution[totEmployedBees];
 	
@@ -49,6 +49,11 @@ public class ABCSeq extends Task{
         // Get total vertices
         int totNodes = graph.getNodes();
         Node allNodes[] = new Node[totNodes];
+
+		// Get all nodes in graph
+		for(int i=0; i<totNodes; i++){
+			graph.nextVertex(allNodes[i]);
+		}
 
 		// Generate initial solutions
         for(int i=0; i<totEmployedBees; i++){

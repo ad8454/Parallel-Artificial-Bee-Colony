@@ -190,4 +190,33 @@ class Solution implements Cloneable, Comparable<Solution>{
 		}
 		return  toReturn1 + toReturn2;
 	}
+	
+	/**
+	 * Implement method to clone object
+	 */
+	public Object clone()
+	{
+		try{
+			Solution soln = (Solution) super.clone();
+			soln.copy(this);
+			return soln;
+		}
+		catch(CloneNotSupportedException e){
+			throw new RuntimeException("Bad code");
+		}
+	}
+	
+	/**
+	 * Method to deep copy shared variables.
+	 *
+	 * @param  soln  Solution instance
+	 */
+	public Solution copy(Solution soln){
+		this.setFitness(soln.getFitness());
+		this.setRoute(soln.getRoute());
+		this.setTrial(soln.getTrial());
+		this.id = soln.id;
+		this.totalNodes = soln.totalNodes;
+		return this;
+	}
 }

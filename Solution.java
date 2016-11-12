@@ -40,6 +40,7 @@ class Solution implements Cloneable{
 		}
 	}
 
+
 	public double computeFitness(){
 
 		double distance = 0;
@@ -61,6 +62,14 @@ class Solution implements Cloneable{
 
 	public double getFitness(){
 		return fitness;
+	}
+	public Node[] getRoute(){
+		return this.route;
+	}
+	public void setRoute(Node[] route){
+		for(int i = 0; i<route.length; i++){
+			this.route[i] = route[i];
+		}
 	}
 
     public void setTrial(int trial){
@@ -111,5 +120,17 @@ class Solution implements Cloneable{
 
 	public void setLocalSolution(Node route[]){
 		this.route = route;
+	}
+
+	public void getDeepCopy(Solution copy){
+
+
+		copy.setFitness(this.fitness);
+		copy.setRoute(this.route);
+		copy.setTrial(this.trial);
+		copy.id = this.id;
+		copy.totalNodes = this.totalNodes;
+
+
 	}
 }

@@ -75,7 +75,8 @@ class Solution implements Cloneable, Comparable<Solution>{
     public void setTrial(int trial){
         this.trial = trial;
     }
-    public void incTrial(){
+
+	public void incTrial(){
      this.trial++;
 
     }
@@ -83,6 +84,9 @@ class Solution implements Cloneable, Comparable<Solution>{
         return this.trial;
     }
 
+	public boolean isExhausted(){
+		return this.trial>this.TRIAL_LIMIT;
+	}
 
 	public int getSize(){
 		return route.length;
@@ -112,7 +116,7 @@ class Solution implements Cloneable, Comparable<Solution>{
 	/**
 	 * Method to deep copy shared variables.
 	 *
-	 * 
+	 *
 	 */
 	public Node[] getLocalSolution(){
 		return route;

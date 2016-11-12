@@ -86,12 +86,14 @@ public class ABCSeq extends Task{
 					newFitness = oldFitness;		//revert to old fitness
 				}
 				// reset the number of trials of solution to indicate improvement
-				localSolution.setTrial(0);
+				if(!(oldFitness == newFitness)){
+					localSolution.setTrial(0);
+				}
 				localSolution.setFitness(newFitness);
 				totWeight += newFitness;
 			}
 			
-
+			// Onlooker bee phase
 			for(int i=0; i < totEmployedBees; i++){
 				// The roulette wheel selection
 				double probab = totWeight * rand.nextDouble();
@@ -117,11 +119,17 @@ public class ABCSeq extends Task{
 				onlookerSoln.swap(idx1, idx2);
 				double newFitness = onlookerSoln.computeFitness();
 				if(oldFitness > newFitness) {
+					onlookerSoln.incTrial();
 					onlookerSoln.swap(idx1, idx2); //revert
 					newFitness = oldFitness;
 				}
+				if(!(oldFitness == newFitness)){
+					onlookerSoln.setTrial(0);
+				}
 				onlookerSoln.setFitness(newFitness);
 				totWeight += newFitness;
+
+
 			}
 			
 		}

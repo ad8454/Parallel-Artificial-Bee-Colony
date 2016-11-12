@@ -8,7 +8,7 @@ import java.util.Random;
  * @author  Ajinkya Dhaigude
  */
  
-class Solution implements Cloneable{
+class Solution implements Cloneable, Comparable<Solution>{
 
     // shared variables
 	private Node route[];	// Solution path eg {0->1->2->3->0->4->5->6->0->7->8}
@@ -112,7 +112,7 @@ class Solution implements Cloneable{
 	/**
 	 * Method to deep copy shared variables.
 	 *
-	 * @param  soln  Solution instance
+	 * 
 	 */
 	public Node[] getLocalSolution(){
 		return route;
@@ -132,5 +132,20 @@ class Solution implements Cloneable{
 		copy.totalNodes = this.totalNodes;
 
 
+	}
+
+	@Override
+	public int compareTo(Solution other) {
+		// This soltion is better
+		if(this.fitness > other.fitness){
+			return -1;
+		}
+		// The other solution is better
+		else if(this.fitness < other.fitness){
+			return 1;
+		}
+		else{
+			return 0;
+		}
 	}
 }

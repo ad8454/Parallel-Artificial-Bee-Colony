@@ -22,9 +22,9 @@ import edu.rit.util.Instance;
 public class ABCSeq extends Task{
 	
 	// command line arguments and bounds for search
-	int totEmployedBees = 10;		//TODO: find way to determine
-	int MAX_EPOCH = 50;
-	int totVehicles = 5;
+	int totEmployedBees = 1000;		//TODO: find way to determine
+	int MAX_EPOCH = 10000;
+	int totVehicles = 2;
     Graph graph = null;
     Random rand;
 	Solution employedBees[] = new Solution[totEmployedBees];
@@ -54,6 +54,7 @@ public class ABCSeq extends Task{
 
 		// Get all nodes in graph
 		for(int i=0; i<totNodes; i++){
+			allNodes[i] = new Node();
 			graph.nextVertex(allNodes[i]);
 		}
 
@@ -62,37 +63,19 @@ public class ABCSeq extends Task{
         	//employedBees[i] = new Bee(totNodes, totVehicles);
         	employedBees[i] = new Solution(allNodes, totVehicles, i);
         	employedBees[i].genRandomSolution(rand);
-        	onlookerBees[i] = new Solution();
+			//System.out.println(employedBees[i]+"\n");
+			onlookerBees[i] = new Solution();
         }
         
         int epoch = 0;
-        
+
 		while(epoch++ < MAX_EPOCH){
 			double totWeight = 0;
 			
 			for(int i=0; i < totEmployedBees; i++){
 				Solution localSolution = employedBees[i];
 				
-				double oldFitness = localSolution.computeFitness();
-				
-				int idx1 = rand.nextInt(localSolution.getSize());
-				int idx2 = rand.nextInt(localSolution.getSize());
-				localSolution.swap(idx1, idx2);
-				double newFitness = localSolution.computeFitness();
-				if(oldFitness > newFitness) {
-					// Increment the number of trials to indicate exhaustion of
-					// a food source
-					localSolution.incTrial();
-
-					localSolution.swap(idx1, idx2); //revert
-					newFitness = oldFitness;		//revert to old fitness
-				}
-				// reset the number of trials of solution to indicate improvement
-				if(!(oldFitness == newFitness)){
-					localSolution.setTrial(0);
-				}
-				localSolution.setFitness(newFitness);
-				totWeight += newFitness;
+				totWeight += localSolution.exploitSolution(rand);
 			}
 			
 			// Onlooker bee phase
@@ -101,6 +84,7 @@ public class ABCSeq extends Task{
 				double probab = totWeight * rand.nextDouble();
 
 				Solution onlookerSoln = onlookerBees[i];
+
 				boolean picked = false;
 				for(Solution soln: employedBees){
 					probab -= soln.getFitness();
@@ -115,21 +99,7 @@ public class ABCSeq extends Task{
 					//onlookerSoln.setLocalSolution(employedBees[totEmployedBees - 1].getLocalSolution());
 				
 				
-				double oldFitness = onlookerSoln.computeFitness();
-				int idx1 = rand.nextInt(onlookerSoln.getSize());
-				int idx2 = rand.nextInt(onlookerSoln.getSize());
-				onlookerSoln.swap(idx1, idx2);
-				double newFitness = onlookerSoln.computeFitness();
-				if(oldFitness > newFitness) {
-					onlookerSoln.incTrial();
-					onlookerSoln.swap(idx1, idx2); //revert
-					newFitness = oldFitness;
-				}
-				if(!(oldFitness == newFitness)){
-					onlookerSoln.setTrial(0);
-				}
-				onlookerSoln.setFitness(newFitness);
-				totWeight += newFitness;
+				totWeight+= onlookerSoln.exploitSolution(rand);
 
 				// Set solution to employedbees array if better
 				if(employedBees[onlookerSoln.id].compareTo(onlookerSoln)>0){
@@ -154,7 +124,9 @@ public class ABCSeq extends Task{
 				bestDiscarded = employedBees[i];
 			}
 		}
-        
+
+		System.out.println(bestDiscarded);
+
 	}
     
 	/**

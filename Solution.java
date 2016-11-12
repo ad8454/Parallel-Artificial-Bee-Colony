@@ -44,11 +44,16 @@ class Solution implements Cloneable, Comparable<Solution>{
 
 	public double computeFitness(){
 
+		double distance = computeDistance();
+		return 1/distance;
+	}
+
+	public double computeDistance(){
 		double distance = 0;
 		for(int i=0; i<route.length-1; i++){
 			distance += getDistance(route[i], route[i+1]);
 		}
-		return 1/distance;
+		return distance;
 	}
 
 	public double getDistance(Node n1, Node n2){
@@ -153,5 +158,14 @@ class Solution implements Cloneable, Comparable<Solution>{
 		else{
 			return 0;
 		}
+	}
+
+	public String toString(){
+		String toReturn1 = "Fitness: "+computeDistance()+"\nRoute:";
+		String toReturn2="";
+		for(Node n:route){
+			toReturn2 += n.toString();
+		}
+		return  toReturn1 + toReturn2;
 	}
 }

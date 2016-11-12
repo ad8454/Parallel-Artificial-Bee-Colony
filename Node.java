@@ -9,4 +9,8 @@ public class Node {
 	public int id;
 	public int x;
 	public int y;
+
+	public String toString(){
+		return id+"("+x+", "+y+")  ";
+	}
 }

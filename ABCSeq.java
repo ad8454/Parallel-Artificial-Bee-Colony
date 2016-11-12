@@ -20,11 +20,10 @@ import edu.rit.util.Instance;
  */
  
 public class ABCSeq extends Task{
-	
 	// command line arguments and bounds for search
-	int totEmployedBees = 1000;		//TODO: find way to determine
+	int totEmployedBees = 100;		//TODO: find way to determine
 	int MAX_EPOCH = 10000;
-	int totVehicles = 2;
+	int totVehicles = 4;
     Graph graph = null;
     Random rand;
 	Solution employedBees[] = new Solution[totEmployedBees];
@@ -35,10 +34,11 @@ public class ABCSeq extends Task{
 	 * Main program for DioEqnSeq.
 	 */
 	public void main(final String[] args){
-		
-		if (args.length != 1)
+
+		if (args.length != 1) {
 			usage(0);
-        
+		}
+
         // Get Graph instance
         try{
         	graph = (Graph) Instance.newInstance (args[0]);
@@ -84,7 +84,6 @@ public class ABCSeq extends Task{
 				double probab = totWeight * rand.nextDouble();
 
 				Solution onlookerSoln = onlookerBees[i];
-
 				boolean picked = false;
 				for(Solution soln: employedBees){
 					probab -= soln.getFitness();

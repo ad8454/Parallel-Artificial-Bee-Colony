@@ -13,6 +13,7 @@ class Solution implements Cloneable, Comparable<Solution>{
 
     // shared variables
 	private Node[] allNodes;
+	private int EXPLOITATION_LIMIT = 10;
 	private Node route[];	// Solution path eg {0->1->2->3->0->4->5->6->0->7->8}
 	private int totalNodes;	// Total nodes
 	private double fitness = -1;
@@ -71,24 +72,25 @@ class Solution implements Cloneable, Comparable<Solution>{
 	public double getFitness(){
 		return fitness;
 	}
+
 	public Node[] getRoute(){
 		return this.route;
 	}
-	public void setRoute(Node[] route){
 
+	public void setRoute(Node[] route){
 		this.route = route;
 	}
 
     public void setTrial(int trial){
-        this.trial = trial;
+		this.trial = trial;
     }
 
 	public void incTrial(){
-     this.trial++;
-
+		this.trial++;
     }
+
     public int getTrial(){
-        return this.trial;
+		return this.trial;
     }
 
 	public boolean isExhausted(){
@@ -122,23 +124,25 @@ class Solution implements Cloneable, Comparable<Solution>{
 	}
 
 	public double exploitSolution(Random rand){
-		double oldFitness = computeFitness();
-		int idx1 = rand.nextInt(route.length - 2) + 1;
-		int idx2 = rand.nextInt(route.length - 2) + 1;
-		swap(idx1, idx2);
-		double newFitness = computeFitness();
-		if(oldFitness > newFitness) {
-			// Increment the number of trials to indicate exhaustion of
-			// a food source
-			incTrial();
-			swap(idx1, idx2); //revert
-			newFitness = oldFitness;		//revert to old fitness
+		for(int i = 0; i<EXPLOITATION_LIMIT; i++){
+			double oldFitness = computeFitness();
+			int idx1 = rand.nextInt(route.length - 2) + 1;
+			int idx2 = rand.nextInt(route.length - 2) + 1;
+			swap(idx1, idx2);
+			double newFitness = computeFitness();
+			if(oldFitness > newFitness) {
+				// Increment the number of trials to indicate exhaustion of
+				// a food source
+				incTrial();
+				swap(idx1, idx2); //revert
+				newFitness = oldFitness;		//revert to old fitness
+			}
+			// reset the number of trials of solution to indicate improvement
+			if(!(oldFitness == newFitness)){
+				setTrial(0);
+			}
+			setFitness(newFitness);
 		}
-		// reset the number of trials of solution to indicate improvement
-		if(!(oldFitness == newFitness)){
-			setTrial(0);
-		}
-		setFitness(newFitness);
 		return this.fitness;
 	}
 
@@ -156,15 +160,11 @@ class Solution implements Cloneable, Comparable<Solution>{
 	}
 
 	public void getDeepCopy(Solution copy){
-
-
 		copy.setFitness(this.fitness);
 		copy.setRoute(this.route);
 		copy.setTrial(this.trial);
 		copy.id = this.id;
 		copy.totalNodes = this.totalNodes;
-
-
 	}
 
 	@Override

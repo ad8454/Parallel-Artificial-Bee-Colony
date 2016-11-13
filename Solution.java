@@ -85,8 +85,8 @@ class Solution implements Cloneable, Comparable<Solution>{
 		this.trial = trial;
     }
 
-	public void incTrial(){
-		this.trial++;
+	public void incTrial(int num){
+		this.trial += num;
     }
 
     public int getTrial(){
@@ -133,7 +133,7 @@ class Solution implements Cloneable, Comparable<Solution>{
 			if(oldFitness > newFitness) {
 				// Increment the number of trials to indicate exhaustion of
 				// a food source
-				incTrial();
+				incTrial(1);
 				swap(idx1, idx2); //revert
 				newFitness = oldFitness;		//revert to old fitness
 			}

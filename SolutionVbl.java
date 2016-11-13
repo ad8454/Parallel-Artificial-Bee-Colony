@@ -10,7 +10,7 @@ import edu.rit.pj2.Vbl;
  */
 
 public class SolutionVbl implements Vbl{
-	public Solution soln;
+	public Solution item;
 	
 	/**
 	 * Default empty constructor.
@@ -23,8 +23,8 @@ public class SolutionVbl implements Vbl{
 	 * Constructor to initialize Solution instance.
 	 *
 	 */
-	public SolutionVbl(Solution soln){
-		this.soln = soln;
+	public SolutionVbl(Solution item){
+		this.item = item;
 	}
 
 	/**
@@ -34,7 +34,7 @@ public class SolutionVbl implements Vbl{
 	 * @param  vbl	Object containing shared variables
 	 */
 	public void set(Vbl vbl){
-		this.soln.copy(((SolutionVbl)vbl).soln);
+		this.item.copy(((SolutionVbl)vbl).item);
 	}
 	
 	/**
@@ -51,8 +51,8 @@ public class SolutionVbl implements Vbl{
 	public Object clone(){
 		try{
 			SolutionVbl vbl = (SolutionVbl) super.clone();
-			if (this.soln != null)
-				vbl.soln = (Solution) this.soln.clone();
+			if (this.item != null)
+				vbl.item = (Solution) this.item.clone();
 			return vbl;
 		}
 		catch(CloneNotSupportedException e){
@@ -69,10 +69,10 @@ public class SolutionVbl implements Vbl{
 		/**
 		 * Constructor to initialize shared variables.
 		 *
-		 * @param  soln   Instance of Solution
+		 * @param  item   Instance of Solution
 		 */
-		public Max(Solution soln){
-			super(soln);
+		public Max(Solution item){
+			super(item);
 		}
 		
 		/**
@@ -84,7 +84,7 @@ public class SolutionVbl implements Vbl{
 		 */
 		public void reduce(Vbl vbl){
 			SolutionVbl otherSolnVbl = (SolutionVbl)vbl;
-			if(soln.compareTo(otherSolnVbl.soln) > 1)
+			if(item.compareTo(otherSolnVbl.item) > 1)
 				super.set(vbl);
 		}
 	}

@@ -74,6 +74,11 @@ public class SolutionVbl implements Vbl{
 		public Max(Solution item){
 			super(item);
 		}
+
+        public Max(){
+            super();
+            this.item = new Solution();
+        }
 		
 		/**
 		 * Reduce the given shared variable into this shared variable using the
@@ -84,7 +89,7 @@ public class SolutionVbl implements Vbl{
 		 */
 		public void reduce(Vbl vbl){
 			SolutionVbl otherSolnVbl = (SolutionVbl)vbl;
-			if(item.compareTo(otherSolnVbl.item) > 1)
+			if(item.compareTo(otherSolnVbl.item) > 0)
 				super.set(vbl);
 		}
 	}

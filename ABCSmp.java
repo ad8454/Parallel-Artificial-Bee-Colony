@@ -17,8 +17,8 @@ public class ABCSmp extends Task{
     Random rand;
     int lb=0;
     int ub = totEmployedBees;
-    SolutionVbl employedBees[] = new SolutionVbl[totEmployedBees];
-    SolutionVbl onlookerBees[] = new SolutionVbl[totEmployedBees];
+    SolutionArrayVbl employedBees = new SolutionArrayVbl.Max(new Solution[totEmployedBees]);
+    SolutionArrayVbl onlookerBees = new SolutionArrayVbl.Max(new Solution[totEmployedBees]);
     SolutionVbl bestDiscarded;
     DoubleVbl totWeight;
 
@@ -51,10 +51,10 @@ public class ABCSmp extends Task{
         // Generate initial solutions
         for(int i=0; i<totEmployedBees; i++){
             //employedBees[i] = new Bee(totNodes, totVehicles);
-            employedBees[i].item = new Solution(allNodes, totVehicles, i);
-            employedBees[i].item.genRandomSolution(rand);
+            employedBees.item[i] = new Solution(allNodes, totVehicles, i);
+            employedBees.item[i].genRandomSolution(rand);
             //System.out.println(employedBees[i]+"\n");
-            onlookerBees[i].item = new Solution();
+            onlookerBees.item[i] = new Solution();
         }
 
         int epoch = 0;
@@ -79,18 +79,84 @@ public class ABCSmp extends Task{
                 public void run(int i) throws Exception {
                     double totWeight = 0;
                     //Random rand = new Random();
-                    SolutionVbl localSolution = employedBees[i];
+                    SolutionVbl localSolution = new SolutionVbl(employedBees.item[i]);
                     thrTotWeight.item += localSolution.item.exploitSolution(thrRand);
                 }
             });
 
             // Now start roulette wheel selection for onlooker bees
             parallelFor(lb, ub).exec(new Loop() {
+
+                SolutionArrayVbl thrEmployedBees;
+                SolutionArrayVbl thrOnlookerBees;
+                SolutionVbl thrBestDiscarded;
+                DoubleVbl thrTotWeight;
+                Random thrRand;
+
+                public void start(){
+                    thrEmployedBees = threadLocal(employedBees);
+                    thrOnlookerBees = threadLocal(onlookerBees);
+                    thrBestDiscarded = threadLocal(bestDiscarded);
+                    thrTotWeight = threadLocal(totWeight);
+                    thrRand = new Random();
+                }
                 @Override
                 public void run(int i) throws Exception {
+                    double probab = thrTotWeight.item * thrRand.nextDouble();
+                    Solution onlookerSoln = thrOnlookerBees.item[i];
+                    boolean picked = false;
+                    for(Solution soln: thrEmployedBees.item){
+                        probab -= soln.getFitness();
+                        if(probab <= 0){
+                            soln.getDeepCopy(onlookerSoln);
+                            picked = true;
+                            break;
+                        }
+                    }
+                    if(! picked) // in case of round off error, assign last solution
+                        thrEmployedBees.item[totEmployedBees-1].getDeepCopy(onlookerSoln);
+                    //onlookerSoln.setLocalSolution(employedBees[totEmployedBees - 1].getLocalSolution());
 
+                    onlookerSoln.exploitSolution(rand);
+                    if(thrEmployedBees.item[onlookerSoln.id].compareTo(onlookerSoln)>0){
+                        thrEmployedBees.item[onlookerSoln.id] = onlookerSoln;
+                    }
+
+                    for(int j = 0; i  < thrEmployedBees.item.length; j++){
+
+                        if(thrEmployedBees.item[j].isExhausted()){
+                            if(thrBestDiscarded.item.compareTo(thrEmployedBees.item[j])>0){
+                                bestDiscarded.item = thrEmployedBees.item[j];
+                            }
+                            thrEmployedBees.item[j].genRandomSolution(thrRand);
+                        }
+                    }
                 }
             });
+
         }
+
+        // Final reduction to get best solution
+        for(int i=0; i<employedBees.item.length; i++){
+            if(bestDiscarded.item.compareTo(employedBees.item[i])>0){
+                bestDiscarded.item = employedBees.item[i];
+            }
+        }
+
+        System.out.println(bestDiscarded.item);
+
+    }
+
+    private static void usage(int err){
+        switch(err){
+            case 0: System.err.println ("Inavlid number of arguments. Usage is: java pj2 DioEqnSeq <n> <c> <lb> <ub>");
+                break;
+            case 1: System.err.println ("Inavlid argument type. Types should be: <n>(int) <c>(long) <lb>(long) <ub>(long)");
+                break;
+            case 2: System.err.println ("Inavlid argument. <n> should be at least equal to 2");
+                break;
+            case 3: System.err.println ("Inavlid argument. <ub> should not be less than <lb>");
+        }
+        throw new IllegalArgumentException();
     }
 }

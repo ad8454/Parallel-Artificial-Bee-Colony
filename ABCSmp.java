@@ -1,5 +1,6 @@
 import edu.rit.pj2.Loop;
 import edu.rit.pj2.Task;
+import edu.rit.pj2.vbl.IntVbl;
 import edu.rit.util.Instance;
 import edu.rit.pj2.vbl.DoubleVbl;
 
@@ -54,22 +55,23 @@ public class ABCSmp extends Task{
             employedBees.item[i] = new Solution(allNodes, totVehicles, i);
             employedBees.item[i].genRandomSolution(rand);
             //System.out.println(employedBees[i]+"\n");
-            onlookerBees.item[i] = new Solution();
+            onlookerBees.item[i] = new Solution(allNodes, totVehicles, i);
         }
 
-        int epoch = 0;
+        IntVbl epoch = new IntVbl();
 
-        while(epoch++ < MAX_EPOCH){
+        while(epoch.item++ < MAX_EPOCH){
             // Initiate a parallelFor loop across all cores.
             // Each core will handle a different solution
 
-            parallelFor(lb, ub).exec(new Loop() {
-
+            parallelFor(lb, ub-1).exec(new Loop() {
+                IntVbl thrEpoch;
                 SolutionVbl thrBestDiscarded;
                 Random thrRand;
                 DoubleVbl thrTotWeight;
 
                 public void start(){
+                    thrEpoch = threadLocal(epoch);
                     thrTotWeight = threadLocal(totWeight);
                     thrBestDiscarded = threadLocal(bestDiscarded);
                     thrRand = new Random();
@@ -79,13 +81,14 @@ public class ABCSmp extends Task{
                 public void run(int i) throws Exception {
                     double totWeight = 0;
                     //Random rand = new Random();
-                    SolutionVbl localSolution = new SolutionVbl(employedBees.item[i]);
-                    thrTotWeight.item += localSolution.item.exploitSolution(thrRand);
+                    Solution localSolution = employedBees.item[i];
+                    //System.out.println("happened at epoch: "+thrEpoch.item);
+                    thrTotWeight.item += localSolution.exploitSolution(thrRand);
                 }
             });
 
             // Now start roulette wheel selection for onlooker bees
-            parallelFor(lb, ub).exec(new Loop() {
+            parallelFor(lb, ub-1).exec(new Loop() {
 
                 SolutionArrayVbl thrEmployedBees;
                 SolutionArrayVbl thrOnlookerBees;
@@ -122,7 +125,7 @@ public class ABCSmp extends Task{
                         thrEmployedBees.item[onlookerSoln.id] = onlookerSoln;
                     }
 
-                    for(int j = 0; i  < thrEmployedBees.item.length; j++){
+                    for(int j = 0; j  < thrEmployedBees.item.length; j++){
 
                         if(thrEmployedBees.item[j].isExhausted()){
                             if(thrBestDiscarded.item.compareTo(thrEmployedBees.item[j])>0){

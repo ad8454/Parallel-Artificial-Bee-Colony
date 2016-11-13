@@ -88,10 +88,14 @@ public class SolutionArrayVbl implements Vbl{
 		 */
 		public void reduce(Vbl vbl){
 			SolutionArrayVbl otherSolnVbl = (SolutionArrayVbl)vbl;
+
 			for(int i=0; i< item.length; i++){
+
 				int comparisionResult = item[i].compareTo(otherSolnVbl.item[i]);
+
 				if(comparisionResult < 0)
 					otherSolnVbl.item[i].copy(item[i]);
+
 				else if(comparisionResult == 0){
 					int oldTrial = otherSolnVbl.item[i].getTrial();
 					otherSolnVbl.item[i].copy(item[i]);

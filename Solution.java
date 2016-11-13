@@ -53,6 +53,10 @@ class Solution implements Cloneable, Comparable<Solution>{
 
 	public double computeDistance(){
 		double distance = 0;
+		if(this.route == null){
+			System.out.println(id);
+		}
+
 		for(int i=0; i<route.length-1; i++){
 			distance += getDistance(route[i], route[i+1]);
 		}
@@ -60,6 +64,7 @@ class Solution implements Cloneable, Comparable<Solution>{
 	}
 
 	public double getDistance(Node n1, Node n2){
+
 		int yDiff = (n2.y - n1.y);
 		int xDiff = (n2.x - n1.x);
 		return Math.sqrt((yDiff * yDiff) + (xDiff * xDiff));

@@ -13,11 +13,11 @@ class Solution implements Cloneable, Comparable<Solution>{
 
     // shared variables
 	private Node[] allNodes;
-	private int EXPLOITATION_LIMIT = 10;
+	private int EXPLOITATION_LIMIT = 50;
 	private Node route[];	// Solution path eg {0->1->2->3->0->4->5->6->0->7->8}
 	private int totalNodes;	// Total nodes
 	private double fitness = -1;
-    private int TRIAL_LIMIT = 100;
+    private int TRIAL_LIMIT = 1000;
     private int trial = 0;
     public int id;
 
@@ -83,6 +83,9 @@ class Solution implements Cloneable, Comparable<Solution>{
 	}
 
 	public void setRoute(Node[] route){
+		if(route[0] == null){
+			System.out.println("route is null during copy or deep copy");
+		}
 		this.route = route;
 	}
 

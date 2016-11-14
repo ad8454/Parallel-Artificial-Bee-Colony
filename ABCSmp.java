@@ -9,143 +9,134 @@ import java.util.Random;
 /**
  * Created by Sameer on 11/12/2016.
  */
-public class ABCSmp extends Task{
+public class ABCSmp extends Task {
 
-    int totEmployedBees = 100;		//TODO: find way to determine
-    int MAX_EPOCH = 10000;
-    int totVehicles = 4;
-    Graph graph = null;
+    int totEmployedBees;        //TODO: find way to determine
+    int MAX_EPOCH=1000;
+    int totVehicles;
+    Graph graph;
     Random rand;
-    int lb=0;
-    int ub = totEmployedBees;
-    SolutionArrayVbl employedBees = new SolutionArrayVbl.Max(new Solution[totEmployedBees]);
-    SolutionArrayVbl onlookerBees = new SolutionArrayVbl.Max(new Solution[totEmployedBees]);
+    int lb;
+    int ub;
+    Solution[] employedBees;
+    Solution[] onlookerBees;
     SolutionVbl bestDiscarded;
     DoubleVbl totWeight;
 
-    public void main(String args[]){
+    public void main(String args[]) {
 
+        // Usage Statement
         if (args.length != 1) {
             usage(0);
         }
 
         // Get Graph instance
-        try{
-            graph = (Graph) Instance.newInstance (args[0]);
-        } catch(Exception e){
+        try {
+            graph = (Graph) Instance.newInstance(args[0]);
+        } catch (Exception e) {
             usage(1);
         }
-        bestDiscarded = new SolutionVbl.Max();
+
         totWeight = new DoubleVbl.Sum(0);
         rand = new Random();
+        lb = 0;
+        ub = cores() - 1;
 
         // Get total vertices
         int totNodes = graph.getNodes();
         Node allNodes[] = new Node[totNodes];
+        totEmployedBees = 1000;
+        totVehicles = 4;
+        employedBees = new Solution[totEmployedBees];
+        onlookerBees = new Solution[totEmployedBees];
 
         // Get all nodes in graph
-        for(int i=0; i<totNodes; i++){
+        for (int i = 0; i < totNodes; i++) {
             allNodes[i] = new Node();
             graph.nextVertex(allNodes[i]);
         }
 
+        bestDiscarded = new SolutionVbl.Max(new Solution(allNodes, totVehicles, 0));
+
+
         // Generate initial solutions
-        for(int i=0; i<totEmployedBees; i++){
+        for (int i = 0; i < totEmployedBees; i++) {
             //employedBees[i] = new Bee(totNodes, totVehicles);
-            employedBees.item[i] = new Solution(allNodes, totVehicles, i);
-            employedBees.item[i].genRandomSolution(rand);
+            employedBees[i] = new Solution(allNodes, totVehicles, i);
+            employedBees[i].genRandomSolution(rand);
             //System.out.println(employedBees[i]+"\n");
-            onlookerBees.item[i] = new Solution(allNodes, totVehicles, i);
+            onlookerBees[i] = new Solution(allNodes, totVehicles, i);
+            onlookerBees[i].genRandomSolution(rand);
         }
+        int range = totEmployedBees/cores();
+        int epoch = 0;
 
-        IntVbl epoch = new IntVbl();
+        while (epoch++ < MAX_EPOCH) {
 
-        while(epoch.item++ < MAX_EPOCH){
-            // Initiate a parallelFor loop across all cores.
-            // Each core will handle a different solution
+            parallelFor(lb, ub).exec(new Loop() {
 
-            parallelFor(lb, ub-1).exec(new Loop() {
-                IntVbl thrEpoch;
-                SolutionVbl thrBestDiscarded;
                 Random thrRand;
-                DoubleVbl thrTotWeight;
+                Solution[] thrEmployedBees;
+                SolutionVbl thrBestDiscarded;
 
                 public void start(){
-                    thrEpoch = threadLocal(epoch);
-                    thrTotWeight = threadLocal(totWeight);
+
                     thrBestDiscarded = threadLocal(bestDiscarded);
                     thrRand = new Random();
                 }
 
                 @Override
-                public void run(int i) throws Exception {
+                public void run(int j) throws Exception {
+
+                    int offset = j * range;
                     double totWeight = 0;
-                    //Random rand = new Random();
-                    Solution localSolution = employedBees.item[i];
-                    //System.out.println("happened at epoch: "+thrEpoch.item);
-                    thrTotWeight.item += localSolution.exploitSolution(thrRand);
-                }
-            });
 
-            // Now start roulette wheel selection for onlooker bees
-            parallelFor(lb, ub-1).exec(new Loop() {
+                    for(int i=offset; i < range; i++){
+                        Solution localSolution = employedBees[i];
 
-                SolutionArrayVbl thrEmployedBees;
-                SolutionArrayVbl thrOnlookerBees;
-                SolutionVbl thrBestDiscarded;
-                DoubleVbl thrTotWeight;
-                Random thrRand;
-
-                public void start(){
-                    thrEmployedBees = threadLocal(employedBees);
-                    thrOnlookerBees = threadLocal(onlookerBees);
-                    thrBestDiscarded = threadLocal(bestDiscarded);
-                    thrTotWeight = threadLocal(totWeight);
-                    thrRand = new Random();
-                }
-                @Override
-                public void run(int i) throws Exception {
-                    double probab = thrTotWeight.item * thrRand.nextDouble();
-                    Solution onlookerSoln = thrOnlookerBees.item[i];
-                    boolean picked = false;
-                    for(Solution soln: thrEmployedBees.item){
-                        probab -= soln.getFitness();
-                        if(probab <= 0){
-                            soln.getDeepCopy(onlookerSoln);
-                            picked = true;
-                            break;
-                        }
+                        totWeight += localSolution.exploitSolution(rand);
                     }
-                    if(! picked) // in case of round off error, assign last solution
-                        thrEmployedBees.item[totEmployedBees-1].getDeepCopy(onlookerSoln);
-                    //onlookerSoln.setLocalSolution(employedBees[totEmployedBees - 1].getLocalSolution());
+                    // Onlooker bee phase
+                    for(int i=offset; i < range; i++){
+                        // The roulette wheel selection
+                        double probab = totWeight * rand.nextDouble();
 
-                    onlookerSoln.exploitSolution(rand);
-                    if(thrEmployedBees.item[onlookerSoln.id].compareTo(onlookerSoln)>0){
-                        thrEmployedBees.item[onlookerSoln.id] = onlookerSoln;
-                    }
-
-                    for(int j = 0; j  < thrEmployedBees.item.length; j++){
-
-                        if(thrEmployedBees.item[j].isExhausted()){
-                            if(thrBestDiscarded.item.compareTo(thrEmployedBees.item[j])>0){
-                                bestDiscarded.item = thrEmployedBees.item[j];
+                        Solution onlookerSoln = onlookerBees[i];
+                        boolean picked = false;
+                        for(int k=offset; k<range; k++){
+                            Solution soln = employedBees[k];
+                            probab -= soln.getFitness();
+                            if(probab <= 0){
+                                soln.getDeepCopy(onlookerSoln);
+                                picked = true;
+                                break;
                             }
-                            thrEmployedBees.item[j].genRandomSolution(thrRand);
+                        }
+                        if(! picked) // in case of round off error, assign last solution
+                            employedBees[offset + range-1].getDeepCopy(onlookerSoln);
+
+                        totWeight+= onlookerSoln.exploitSolution(rand);
+
+                        // Set solution to employedbees array if better
+                        if(employedBees[onlookerSoln.id].compareTo(onlookerSoln)>0){
+                            employedBees[onlookerSoln.id] = onlookerSoln;
                         }
                     }
+                    // Discard any exhausted solutions
+                    for(int i=offset; i<range; i++){
+                        if(employedBees[i].isExhausted()){
+                            // See if our discarded is the best one yet (to be discarded)
+                            if(bestDiscarded.item.compareTo(employedBees[i])>0){
+                                bestDiscarded.item = employedBees[i];
+                            }
+                            employedBees[i].genRandomSolution(rand);
+                        }
+                    }
+
                 }
             });
 
         }
-
-        // Final reduction to get best solution
-        for(int i=0; i<employedBees.item.length; i++){
-            if(bestDiscarded.item.compareTo(employedBees.item[i])>0){
-                bestDiscarded.item = employedBees.item[i];
-            }
-        }
-
         System.out.println(bestDiscarded.item);
 
     }

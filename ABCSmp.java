@@ -4,18 +4,23 @@ import edu.rit.pj2.vbl.IntVbl;
 import edu.rit.util.Instance;
 import edu.rit.pj2.vbl.DoubleVbl;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.util.Random;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 /**
  * Created by Sameer on 11/12/2016.
  */
 public class ABCSmp extends Task {
-
+	
     int totEmployedBees;        //TODO: find way to determine
     int MAX_EPOCH=500;
     int totVehicles;
     Graph graph;
-    Random rand;
+    Random rand = new Random();;
     int lb;
     int ub;
     Solution[] employedBees;
@@ -43,12 +48,10 @@ public class ABCSmp extends Task {
             usage(1);
         }
 
-        rand = new Random();
         employedBees = new Solution[totEmployedBees];
         onlookerBees = new Solution[totEmployedBees];
 
         totWeight = new DoubleVbl.Sum(0);
-        rand = new Random();
         lb = 0;
         ub = cores() - 1;
 
@@ -167,7 +170,8 @@ public class ABCSmp extends Task {
         }
 
         System.out.println(bestSolution.item);
-
+        
+        drawMap(bestSolution);
     }
 
     private static void usage(int err){
@@ -184,4 +188,42 @@ public class ABCSmp extends Task {
         }
         throw new IllegalArgumentException();
     }
+
+ 	// draw route map
+ 	private static void drawMap(SolutionVbl bestSoln){
+ 		JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+        frame.setResizable(false);
+        frame.setSize(800, 800);
+        
+        Random rand = new Random();
+        int RADIUS = 2;
+
+        JPanel panel = new JPanel() {
+            @Override
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                
+                Node route[] = bestSoln.item.getRoute();
+                Node prevNode = route[0];
+                Color nodeColor = Color.BLACK;
+                Color routeColor = null;
+                
+                for(Node node: route){
+                	if(node.isDepot())
+                		routeColor = new Color(rand.nextInt(256), 
+                				rand.nextInt(256), rand.nextInt(256));
+                	g.setColor(nodeColor);
+         			g.fillOval(node.x - RADIUS, node.y - RADIUS, RADIUS*2, RADIUS*2);
+         			g.setColor(routeColor);
+     				g.drawLine(prevNode.x, prevNode.y, node.x, node.y);
+                }
+            }
+        };
+        frame.add(panel);
+
+        frame.validate(); // because you added panel after setVisible was called
+        frame.repaint(); // because you added panel after setVisible was called
+ 	}
 }

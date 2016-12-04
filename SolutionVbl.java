@@ -88,9 +88,13 @@ public class SolutionVbl implements Vbl{
 		 * @param  vbl  Shared variable.
 		 */
 		public void reduce(Vbl vbl){
+
 			SolutionVbl otherSolnVbl = (SolutionVbl)vbl;
-			if(item.compareTo(otherSolnVbl.item) > 0)
+
+			if(item.compareTo(otherSolnVbl.item) > 0){
 				super.set(vbl);
+			}
+
 		}
 	}
 }

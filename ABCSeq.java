@@ -3,11 +3,12 @@ import java.util.Random;
 
 import edu.rit.pj2.Task;
 import edu.rit.util.Instance;
+import edu.rit.util.Searching;
 
 /**
- * This program is a sequential implementation of the brute 
- * force approach to finding solutions for the general 
- * Diophantine equation given by: x^n + y^n = z^n + c.
+ * This program is a sequential implementation of
+ * the artificial bee colony algorithm to solve the
+ * artificial bee colony algorithm.
  *
  * Usage: java pj2 DioEqnSeq <n> <c> <lb> <ub>
  *
@@ -21,13 +22,13 @@ import edu.rit.util.Instance;
  
 public class ABCSeq extends Task{
 	// command line arguments and bounds for search
-	int totEmployedBees = 100;		//TODO: find way to determine
-	int MAX_EPOCH = 10000;
-	int totVehicles = 4;
+	int totEmployedBees;		//TODO: find way to determine
+	int MAX_EPOCH;
+	int totVehicles;
     Graph graph = null;
     Random rand;
-	Solution employedBees[] = new Solution[totEmployedBees];
-	Solution onlookerBees[] = new Solution[totEmployedBees];
+	Solution employedBees[];
+	Solution onlookerBees[];
 	Solution bestDiscarded = new Solution();
 	
 	/**
@@ -35,19 +36,25 @@ public class ABCSeq extends Task{
 	 */
 	public void main(final String[] args){
 
-		if (args.length != 1) {
+		if (args.length != 3) {
 			usage(0);
 		}
 
         // Get Graph instance
         try{
         	graph = (Graph) Instance.newInstance (args[0]);
+			totVehicles = Integer.parseInt(args[1]);
+			totEmployedBees = Integer.parseInt(args[2]);
+			MAX_EPOCH = 500;
+
         } catch(Exception e){
             usage(1);
         }
         
         rand = new Random();
-        
+        employedBees = new Solution[totEmployedBees];
+		onlookerBees = new Solution[totEmployedBees];
+
         // Get total vertices
         int totNodes = graph.getNodes();
         Node allNodes[] = new Node[totNodes];
@@ -64,17 +71,17 @@ public class ABCSeq extends Task{
         	employedBees[i] = new Solution(allNodes, totVehicles, i);
         	employedBees[i].genRandomSolution(rand);
 			//System.out.println(employedBees[i]+"\n");
-			onlookerBees[i] = new Solution();
+			onlookerBees[i] = new Solution(allNodes, totVehicles, i);
         }
         
         int epoch = 0;
 
 		while(epoch++ < MAX_EPOCH){
+
 			double totWeight = 0;
 			
 			for(int i=0; i < totEmployedBees; i++){
 				Solution localSolution = employedBees[i];
-				
 				totWeight += localSolution.exploitSolution(rand);
 			}
 			
@@ -88,17 +95,15 @@ public class ABCSeq extends Task{
 				for(Solution soln: employedBees){
 					probab -= soln.getFitness();
 					if(probab <= 0){
-						soln.getDeepCopy(onlookerSoln);
+						onlookerSoln.copy(soln);
 						picked = true;
 						break;
 					}
 				}
 				if(! picked) // in case of round off error, assign last solution
-					employedBees[totEmployedBees-1].getDeepCopy(onlookerSoln);
-					//onlookerSoln.setLocalSolution(employedBees[totEmployedBees - 1].getLocalSolution());
+					onlookerSoln.copy(employedBees[totEmployedBees-1]);
 				
-				
-				totWeight+= onlookerSoln.exploitSolution(rand);
+				onlookerSoln.exploitSolution(rand);
 
 				// Set solution to employedbees array if better
 				if(employedBees[onlookerSoln.id].compareTo(onlookerSoln)>0){
@@ -110,13 +115,12 @@ public class ABCSeq extends Task{
 				if(employedBees[i].isExhausted()){
 					// See if our discarded is the best one yet (to be discarded)
 					if(bestDiscarded.compareTo(employedBees[i])>0){
-						bestDiscarded = employedBees[i];
+						bestDiscarded.copy(employedBees[i]);
 					}
 					employedBees[i].genRandomSolution(rand);
 				}
 			}
 		}
-
 		// Final reduction to get best solution
 		for(int i=0; i<employedBees.length; i++){
 			if(bestDiscarded.compareTo(employedBees[i])>0){
@@ -135,9 +139,11 @@ public class ABCSeq extends Task{
 	 */
 	private static void usage(int err){
 		switch(err){
-			case 0: System.err.println ("Inavlid number of arguments. Usage is: java pj2 DioEqnSeq <n> <c> <lb> <ub>");
+			case 0: System.err.println ("Inavlid number of arguments. Usage is: java pj2 ABCSeq RandomGraph<ctor> " +
+					"<totalvehicles> <numberofbees>");
 					break;
-			case 1: System.err.println ("Inavlid argument type. Types should be: <n>(int) <c>(long) <lb>(long) <ub>(long)");
+			case 1: System.err.println ("Inavlid argument type. Types should be: RandomGraph<ctor>(string) <total" +
+					"vehicles> (int) <numberofbees>(int)");
 					break;
 			case 2: System.err.println ("Inavlid argument. <n> should be at least equal to 2");
                     break;

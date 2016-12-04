@@ -13,4 +13,8 @@ public class Node {
 	public String toString(){
 		return id+"("+x+", "+y+")  ";
 	}
+
+	public boolean isDepot(){
+		return this.id == 0;
+	}
 }

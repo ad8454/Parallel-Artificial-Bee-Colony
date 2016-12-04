@@ -13,15 +13,17 @@ class Solution implements Cloneable, Comparable<Solution>{
 
     // shared variables
 	private Node[] allNodes;
-	private int EXPLOITATION_LIMIT = 50;
+	private int EXPLOITATION_LIMIT = 10;
 	private Node route[];	// Solution path eg {0->1->2->3->0->4->5->6->0->7->8}
 	private int totalNodes;	// Total nodes
-	private double fitness = -1;
-    private int TRIAL_LIMIT = 1000;
+	private double fitness = 0.0;
+    private int TRIAL_LIMIT = 100;
     private int trial = 0;
     public int id;
 
-
+	/**
+	 * Empty constructor
+	 */
 	public Solution(){}
 
 	/**
@@ -32,10 +34,12 @@ class Solution implements Cloneable, Comparable<Solution>{
 	 * @param  id
 	 */
 	public Solution(Node allNodes[], int totVehicles, int id){
-        this.id = id;
+
+		this.id = id;
 		this.allNodes = allNodes;
 		totalNodes = allNodes.length;
 		route = new Node[totalNodes + totVehicles];
+
 		for(int i=0; i<route.length; i++){
 			if(i < totalNodes)
 				route[i] = allNodes[i];
@@ -51,37 +55,67 @@ class Solution implements Cloneable, Comparable<Solution>{
 		return 1/distance;
 	}
 
-	public double computeDistance(){
+	public double altComputeDistance(){
 		double distance = 0;
-		if(this.route == null){
-			System.out.println(id);
-		}
 
 		for(int i=0; i<route.length-1; i++){
+
 			distance += getDistance(route[i], route[i+1]);
 		}
 		return distance;
 	}
 
-	public double getDistance(Node n1, Node n2){
+	public double computeDistance(){
+		double distance = 0;
 
+		for(int i=0; i<route.length-1; i++){
+			double nextDistance = getDistance(route[i], route[i+1]);
+			if(nextDistance == 0){
+				distance  = Double.POSITIVE_INFINITY;
+				break;
+			}
+			distance += nextDistance;
+		}
+		return distance;
+	}
+
+	public double getDistance(Node n1, Node n2){
 		int yDiff = (n2.y - n1.y);
 		int xDiff = (n2.x - n1.x);
 		return Math.sqrt((yDiff * yDiff) + (xDiff * xDiff));
 	}
 
+	/**
+	 * Setter for fitness value
+	 *
+	 * @param fitness	fitness to set
+     */
 	public void setFitness(double fitness){
 		this.fitness = fitness;
 	}
 
+	/**
+	 * Getter for fitness
+	 *
+	 * @return	double 	fitness value of solution
+     */
 	public double getFitness(){
 		return fitness;
 	}
 
+	/**
+	 * Getter for route array
+	 * @return	Node[]	Route computed in solution
+     */
 	public Node[] getRoute(){
 		return this.route;
 	}
 
+	/**
+	 * Set the route to a given route
+	 *
+	 * @param route
+     */
 	public void setRoute(Node[] route){
 		if(route[0] == null){
 			System.out.println("route is null during copy or deep copy");
@@ -89,33 +123,39 @@ class Solution implements Cloneable, Comparable<Solution>{
 		this.route = route;
 	}
 
+	/**
+	 * Setter for the trial value of the solution
+	 * @param trial
+     */
     public void setTrial(int trial){
 		this.trial = trial;
     }
 
+	/**
+	 * Increment the trial by a given amount
+	 * @param num
+     */
 	public void incTrial(int num){
 		this.trial += num;
     }
 
+	/**
+	 * Getter for the trial value of the solution
+	 * @return	int		Number of times the solution has been explored
+     */
     public int getTrial(){
 		return this.trial;
     }
 
+	/**
+	 * Checks if the trial number exceeds the maximum number of
+	 * trials allowed for a solution.
+	 * @return	boolean 	true if the solution is exhausted
+     */
 	public boolean isExhausted(){
 		return this.trial>this.TRIAL_LIMIT;
 	}
 
-	public int getSize(){
-		return route.length;
-	}
-
-	public int getTotNodes(){
-		return totalNodes;
-	}
-
-	public void setIndex(int index, Node node){
-		route[index] = node;
-	}
 
 	public void swap(int idx1, int idx2){
 		Node temp = route[idx1];
@@ -124,6 +164,7 @@ class Solution implements Cloneable, Comparable<Solution>{
 	}
 
 	void genRandomSolution(Random rand){
+
 		for(int i=1; i< route.length - 1; i++){
 			int idx2 = rand.nextInt(route.length - 2) + 1;
 			swap(i, idx2);
@@ -132,39 +173,26 @@ class Solution implements Cloneable, Comparable<Solution>{
 	}
 
 	public double exploitSolution(Random rand){
-		for(int i = 0; i<EXPLOITATION_LIMIT; i++){
-			double oldFitness = computeFitness();
-			int idx1 = rand.nextInt(route.length - 2) + 1;
-			int idx2 = rand.nextInt(route.length - 2) + 1;
-			swap(idx1, idx2);
-			double newFitness = computeFitness();
-			if(oldFitness > newFitness) {
-				// Increment the number of trials to indicate exhaustion of
-				// a food source
-				incTrial(1);
-				swap(idx1, idx2); //revert
-				newFitness = oldFitness;		//revert to old fitness
-			}
-			// reset the number of trials of solution to indicate improvement
-			if(!(oldFitness == newFitness)){
-				setTrial(0);
-			}
-			setFitness(newFitness);
+
+		double oldFitness = computeFitness();
+		int idx1 = rand.nextInt(route.length - 2) + 1;
+		int idx2 = rand.nextInt(route.length - 2) + 1;
+		swap(idx1, idx2);
+		double newFitness = computeFitness();
+		if(oldFitness > newFitness) {
+			// Increment the number of trials to indicate exhaustion of
+			// a food source
+			incTrial(1);
+			swap(idx1, idx2); //revert
+			newFitness = oldFitness;		//revert to old fitness
 		}
+		// reset the number of trials of solution to indicate improvement
+		if(!(oldFitness == newFitness)){
+			setTrial(0);
+		}
+		setFitness(newFitness);
+
 		return this.fitness;
-	}
-
-	/**
-	 * Method to deep copy shared variables.
-	 *
-	 *
-	 */
-	public Node[] getLocalSolution(){
-		return route;
-	}
-
-	public void setLocalSolution(Node route[]){
-		this.route = route;
 	}
 
 	public void getDeepCopy(Solution copy){
@@ -185,18 +213,62 @@ class Solution implements Cloneable, Comparable<Solution>{
 		else if(this.fitness < other.fitness){
 			return 1;
 		}
+		// The solutions are identical
 		else{
 			return 0;
 		}
 	}
 
 	public String toString(){
-		String toReturn1 = "Fitness: "+computeDistance()+"\nRoute:";
-		String toReturn2="";
-		for(Node n:route){
-			toReturn2 += n.toString();
+		double distance = computeDistance();
+
+		if(distance != Double.POSITIVE_INFINITY){
+			String toReturn1 = "Fitness: "+distance+"\nRoute:";
+			String toReturn2="";
+			int route_no = 0;
+			int vehicle_no = 1;
+			for(Node n:route){
+				if(n.isDepot()) {
+					if(route_no != 0)
+						toReturn2 += n.toString() + "\n";
+					if(route_no != route.length - 1) {
+						toReturn2 += "\n Vehicle " + vehicle_no + ": " + n.toString();
+						vehicle_no++;
+					}
+					route_no++;
+				}
+				else {
+					toReturn2 += n.toString();
+					route_no++;
+				}
+
+			}
+			return  toReturn1 + toReturn2;
 		}
-		return  toReturn1 + toReturn2;
+		else{
+			distance = altComputeDistance();
+			String toReturn1 = "Fitness: "+distance+"\nRoute:";
+			String toReturn2="";
+			int route_no = 0;
+			int vehicle_no = 1;
+			for(Node n:route){
+				if(n.isDepot()) {
+					if(route_no != 0)
+						toReturn2 += n.toString() + "\n";
+					if(route_no != route.length - 1) {
+						toReturn2 += "\n Vehicle " + vehicle_no + ": " + n.toString();
+						vehicle_no++;
+					}
+					route_no++;
+				}
+				else {
+					toReturn2 += n.toString();
+					route_no++;
+				}
+
+			}
+			return  toReturn1 + toReturn2;
+		}
 	}
 	
 	/**

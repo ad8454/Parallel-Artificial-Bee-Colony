@@ -1,17 +1,26 @@
 import edu.rit.pj2.Loop;
 import edu.rit.pj2.Task;
-import edu.rit.pj2.vbl.IntVbl;
 import edu.rit.util.Instance;
 import edu.rit.pj2.vbl.DoubleVbl;
 
 import java.util.Random;
 
 /**
- * Created by Sameer on 11/12/2016.
+ * This program is a parallel implementation of the Artificial
+ * Bee Colony (ABC) algorithm for solving the Vehicle Routing 
+ * Problem (VRP).
+ *
+ * It prints out the best found path for each vehicle.
+ *
+ * Usage: java pj2 cores=<cores> ABCSmp "RandomGraph(<nodes>,<range>,<seed>)" <V> <S>
+ *
+ * @author Ajinkya Dhaigude
+ * @author Sameer Raghuram
  */
 public class ABCSmp extends Task {
 
-    int totEmployedBees;        //TODO: find way to determine
+	// Initialize global variables
+    int totEmployedBees;
     int MAX_EPOCH=500;
     int totVehicles;
     Graph graph;
@@ -24,13 +33,16 @@ public class ABCSmp extends Task {
     SolutionVbl bestSolution;
     DoubleVbl totWeight;
 
+	/**
+	 * Main program for ABCSmp.
+	 */
     public void main(String args[]) {
 
         if (args.length < 3) {
             usage(0);
         }
 
-        // Get Graph instance
+        // Get Graph instance and read command line arguments
         try{
             graph = (Graph) Instance.newInstance (args[0]);
             totVehicles = Integer.parseInt(args[1]);
@@ -42,7 +54,8 @@ public class ABCSmp extends Task {
         } catch(Exception e){
             usage(1);
         }
-
+        
+        // Intialize employed and onlooker bees to be equal in number
         rand = new Random();
         employedBees = new Solution[totEmployedBees];
         onlookerBees = new Solution[totEmployedBees];
@@ -62,6 +75,7 @@ public class ABCSmp extends Task {
             graph.nextVertex(allNodes[i]);
         }
 
+        // Initialize instance for storing global best solution
         bestDiscarded = new SolutionVbl.Max(new Solution(allNodes, totVehicles, 0));
         bestDiscarded.item.genRandomSolution(rand);
         bestSolution = new SolutionVbl.Max(new Solution(allNodes, totVehicles, 0));
@@ -77,10 +91,8 @@ public class ABCSmp extends Task {
 
             // Generate initial solutions
             for (int i = 0; i < totEmployedBees; i++) {
-                //employedBees[i] = new Bee(totNodes, totVehicles);
                 employedBees[i] = new Solution(allNodes, totVehicles, i);
                 employedBees[i].genRandomSolution(rand);
-                //System.out.println(employedBees[i]+"\n");
                 onlookerBees[i] = new Solution(allNodes, totVehicles, i);
                 onlookerBees[i].genRandomSolution(rand);
             }
@@ -132,7 +144,7 @@ public class ABCSmp extends Task {
 
                             onlookerSoln.exploitSolution(rand);
 
-                            // Set solution to employedbees array if better
+                            // Set solution to employedBees array if better
                             if(employedBees[onlookerSoln.id].compareTo(onlookerSoln)>0){
                                 employedBees[onlookerSoln.id] = onlookerSoln;
                             }
@@ -142,8 +154,8 @@ public class ABCSmp extends Task {
                         for(int i=offset; i<range; i++){
                             if(employedBees[i].isExhausted()){
                                 // See if our discarded is the best one yet (to be discarded)
-                                if(bestDiscarded.item.compareTo(employedBees[i])>0){
-                                    bestDiscarded.item.copy(employedBees[i]);
+                                if(thrBestDiscarded.item.compareTo(employedBees[i])>0){
+                                    thrBestDiscarded.item.copy(employedBees[i]);
                                 }
                                 employedBees[i].genRandomSolution(rand);
                             }
@@ -152,7 +164,8 @@ public class ABCSmp extends Task {
                 });
 
             }
-
+            
+			// Replace bestDiscarded solution if a better one is found
             for(Solution soln:employedBees){
                 if(bestDiscarded.item.compareTo(soln)>0){
                     bestDiscarded.item.copy(soln);
@@ -166,21 +179,19 @@ public class ABCSmp extends Task {
 
         }
 
+		// Print final result
         System.out.println(bestSolution.item);
 
     }
 
     private static void usage(int err){
         switch(err){
-            case 0: System.err.println ("Inavlid number of arguments. Usage is: java pj2 ABCSeq RandomGraph<ctor> " +
-                    "<totalvehicles> <numberofbees>");
-                break;
-            case 1: System.err.println ("Inavlid argument type. Types should be: RandomGraph<ctor>(string) <total" +
-                    "vehicles> (int) <numberofbees>(int)");
-                break;
-            case 2: System.err.println ("Inavlid argument. <n> should be at least equal to 2");
-                break;
-            case 3: System.err.println ("Inavlid argument. <ub> should not be less than <lb>");
+			case 0: System.err.println ("Inavlid number of arguments. Usage is: java pj2 cores=<cores>" +
+										"ABCSmp \"RandomGraph(<nodes>,<range>,<seed>)\" <V> <S>");
+				break;
+			case 1: System.err.println ("Inavlid argument type. Types should be: <cores>(int), "+
+					"RandomGraph<ctor>(string), <nodes>(int), <range>(int), <seed>(int), <V>(int), <S>(int)");
+				break;
         }
         throw new IllegalArgumentException();
     }

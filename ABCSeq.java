@@ -1,17 +1,23 @@
-import edu.rit.pj2.Loop;
 import edu.rit.pj2.Task;
-import edu.rit.pj2.vbl.IntVbl;
 import edu.rit.util.Instance;
-import edu.rit.pj2.vbl.DoubleVbl;
-
 import java.util.Random;
 
 /**
- * Created by Sameer on 11/12/2016.
+ * This program is a sequential implementation of the Artificial
+ * Bee Colony (ABC) algorithm for solving the Vehicle Routing 
+ * Problem (VRP).
+ *
+ * It prints out the best found path for each vehicle.
+ *
+ * Usage: java pj2 ABCSeq "RandomGraph(<nodes>,<range>,<seed>)" <V> <S>
+ *
+ * @author Ajinkya Dhaigude
+ * @author Sameer Raghuram
  */
 public class ABCSeq extends Task {
 
-	int totEmployedBees;        //TODO: find way to determine
+	// Initialize global variables
+	int totEmployedBees;
 	int MAX_EPOCH=500;
 	int totVehicles;
 	Graph graph;
@@ -24,25 +30,26 @@ public class ABCSeq extends Task {
 	Solution bestSolution;
 	double totWeight;
 
+	/**
+	 * Main program for ABCSeq.
+	 */
 	public void main(String args[]) {
 
-		if (args.length < 3) {
+		if (args.length != 3) {
 			usage(0);
 		}
 
-		// Get Graph instance
+		// Get Graph instance and read command line arguments
 		try{
 			graph = (Graph) Instance.newInstance (args[0]);
 			totVehicles = Integer.parseInt(args[1]);
 			totEmployedBees = Integer.parseInt(args[2]);
-			if(args.length>3){
-				MAX_EPOCH = Integer.parseInt(args[3]);
-			}
 
 		} catch(Exception e){
 			usage(1);
 		}
 
+		// Intialize employed and onlooker bees to be equal in number
 		rand = new Random();
 		employedBees = new Solution[totEmployedBees];
 		onlookerBees = new Solution[totEmployedBees];
@@ -62,14 +69,11 @@ public class ABCSeq extends Task {
 			graph.nextVertex(allNodes[i]);
 		}
 
+		// Initialize instance for storing global best solution
 		bestDiscarded = (new Solution(allNodes, totVehicles, 0));
 		bestDiscarded.genRandomSolution(rand);
 		bestSolution = new Solution(allNodes, totVehicles, 0);
 		bestSolution.genRandomSolution(rand);
-
-
-		int range = totEmployedBees/cores();
-
 
 		for(int round = 0; round < 10; round++){
 
@@ -77,18 +81,13 @@ public class ABCSeq extends Task {
 
 			// Generate initial solutions
 			for (int i = 0; i < totEmployedBees; i++) {
-				//employedBees[i] = new Bee(totNodes, totVehicles);
 				employedBees[i] = new Solution(allNodes, totVehicles, i);
 				employedBees[i].genRandomSolution(rand);
-				//System.out.println(employedBees[i]+"\n");
 				onlookerBees[i] = new Solution(allNodes, totVehicles, i);
 				onlookerBees[i].genRandomSolution(rand);
 			}
 
 			while (epoch++ < MAX_EPOCH) {
-
-
-
 				double totWeight = 0;
 
 				// Employed phase
@@ -115,7 +114,7 @@ public class ABCSeq extends Task {
 							break;
 						}
 					}
-					if(! picked) // in case of round off error, assign last solution
+					if(! picked) // In case of round off error, assign last solution
 						onlookerSoln.copy(employedBees[totEmployedBees-1]);
 
 					onlookerSoln.exploitSolution(rand);
@@ -147,35 +146,31 @@ public class ABCSeq extends Task {
 
 
 			}
-
+			// Replace bestDiscarded solution if a better one is found
 			for(Solution soln:employedBees){
 				if(bestDiscarded.compareTo(soln)>0){
 					bestDiscarded.copy(soln);
 				}
 			}
-
+			
 			if(bestDiscarded.computeDistance() < bestSolution.computeDistance() || (bestSolution.
 					computeDistance() == Double.POSITIVE_INFINITY && bestDiscarded.computeDistance() !=
 					Double.POSITIVE_INFINITY))
 				bestSolution.copy(bestDiscarded);
-
 		}
-
+		
+		// Print final result
 		System.out.println(bestSolution);
-
 	}
 
 	private static void usage(int err){
 		switch(err){
-			case 0: System.err.println ("Inavlid number of arguments. Usage is: java pj2 ABCSeq RandomGraph<ctor> " +
-					"<totalvehicles> <numberofbees>");
+			case 0: System.err.println ("Inavlid number of arguments. Usage is: java pj2 " +
+										"ABCSeq \"RandomGraph(<nodes>,<range>,<seed>)\" <V> <S>");
 				break;
-			case 1: System.err.println ("Inavlid argument type. Types should be: RandomGraph<ctor>(string) <total" +
-					"vehicles> (int) <numberofbees>(int)");
+			case 1: System.err.println ("Inavlid argument type. Types should be: RandomGraph<ctor>(string), "+
+						"<nodes>(int), <range>(int), <seed>(int), <V>(int), <S>(int)");
 				break;
-			case 2: System.err.println ("Inavlid argument. <n> should be at least equal to 2");
-				break;
-			case 3: System.err.println ("Inavlid argument. <ub> should not be less than <lb>");
 		}
 		throw new IllegalArgumentException();
 	}

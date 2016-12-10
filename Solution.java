@@ -1,9 +1,12 @@
 import java.util.Random;
-
 /**
- * This class provides three long reduction
- * variables to be shared by multiple threads
- * running in parallel.
+ * This object is used to encapsulate the solution
+ * to a vehicle routing problem determined by the
+ * Artificial Bee Colony algorithm.
+ *
+ * Contains utility methods that compute various
+ * parameters associated with the ABC algorithm
+ * (like the fitness value).
  *
  * @author  Ajinkya Dhaigude
  * @author  Sameer Raghuram
@@ -12,12 +15,10 @@ import java.util.Random;
 class Solution implements Cloneable, Comparable<Solution>{
 
     // shared variables
-	private Node[] allNodes;
-	private int EXPLOITATION_LIMIT = 10;
 	private Node route[];	// Solution path eg {0->1->2->3->0->4->5->6->0->7->8}
 	private int totalNodes;	// Total nodes
 	private double fitness = 0.0;
-    private int TRIAL_LIMIT = 100;
+    private int TRIAL_LIMIT = 20;
     private int trial = 0;
     public int id;
 
@@ -36,10 +37,10 @@ class Solution implements Cloneable, Comparable<Solution>{
 	public Solution(Node allNodes[], int totVehicles, int id){
 
 		this.id = id;
-		this.allNodes = allNodes;
 		totalNodes = allNodes.length;
 		route = new Node[totalNodes + totVehicles];
 
+		// Initialize nodes in the route
 		for(int i=0; i<route.length; i++){
 			if(i < totalNodes)
 				route[i] = allNodes[i];
@@ -48,13 +49,23 @@ class Solution implements Cloneable, Comparable<Solution>{
 		}
 	}
 
-
+	/**
+	 * Compute the fitness value of the route.
+	 *
+	 * @return double	route fitness
+     */
 	public double computeFitness(){
 
 		double distance = computeDistance();
 		return 1/distance;
 	}
 
+	/**
+	 * Computes the total distance covered by all the
+	 * vehicles for the current route.
+	 *
+	 * @return	double	route distance
+     */
 	public double altComputeDistance(){
 		double distance = 0;
 
@@ -65,6 +76,12 @@ class Solution implements Cloneable, Comparable<Solution>{
 		return distance;
 	}
 
+	/**
+	 * Computes the total distance covered by all the
+	 * vehicles for the current route.
+	 *
+	 * @return	double	route distance
+     */
 	public double computeDistance(){
 		double distance = 0;
 
@@ -79,6 +96,12 @@ class Solution implements Cloneable, Comparable<Solution>{
 		return distance;
 	}
 
+	/**
+	 * Computes the euclidean distance between two nodes.
+	 * @param n1	Node 	First Node
+	 * @param n2	Node 	Second Node
+     * @return		double	distance between nodes
+     */
 	public double getDistance(Node n1, Node n2){
 		int yDiff = (n2.y - n1.y);
 		int xDiff = (n2.x - n1.x);
@@ -110,6 +133,7 @@ class Solution implements Cloneable, Comparable<Solution>{
 	public Node[] getRoute(){
 		return this.route;
 	}
+
 
 	/**
 	 * Set the route to a given route
@@ -156,13 +180,24 @@ class Solution implements Cloneable, Comparable<Solution>{
 		return this.trial>this.TRIAL_LIMIT;
 	}
 
-
+	/**
+	 * Swaps the location of two nodes in a route.
+	 *
+	 * @param idx1
+	 * @param idx2
+     */
 	public void swap(int idx1, int idx2){
 		Node temp = route[idx1];
 		route[idx1] = route[idx2];
 		route[idx2] = temp;
 	}
 
+	/**
+	 * Randomizes the order of the nodes in the
+	 * route to obtain a random solution.
+	 *
+	 * @param rand	Random	pseudorandom-generator
+     */
 	void genRandomSolution(Random rand){
 
 		for(int i=1; i< route.length - 1; i++){
@@ -172,6 +207,13 @@ class Solution implements Cloneable, Comparable<Solution>{
 		//this.fitness = computeFitness();
 	}
 
+	/**
+	 * Performs a local search on the current solution
+	 * Computes the fitness as a result.
+	 *
+	 * @param rand	Random	Pseeudorandom generator.
+	 * @returns 	double	Fitness value of solution
+     */
 	public double exploitSolution(Random rand){
 
 		double oldFitness = computeFitness();
@@ -195,14 +237,15 @@ class Solution implements Cloneable, Comparable<Solution>{
 		return this.fitness;
 	}
 
-	public void getDeepCopy(Solution copy){
-		copy.setFitness(this.fitness);
-		copy.setRoute(this.route);
-		copy.setTrial(this.trial);
-		copy.id = this.id;
-		copy.totalNodes = this.totalNodes;
-	}
 
+	/**
+	 * Utility to compare different Solution instances
+	 * in our program. Solutions are ordered according to
+	 * their fitness value
+	 *
+	 * @param other Solution	Solution being compared to
+	 * @return 		int			Natural ordering
+     */
 	@Override
 	public int compareTo(Solution other) {
 		// This soltion is better
@@ -219,6 +262,12 @@ class Solution implements Cloneable, Comparable<Solution>{
 		}
 	}
 
+	/**
+	 * Returns a string representation of the routes
+	 * of all the vehicles as described by the solution.
+	 *
+	 * @return	String	Solution String repr
+     */
 	public String toString(){
 		double distance = computeDistance();
 
@@ -252,9 +301,12 @@ class Solution implements Cloneable, Comparable<Solution>{
 			int route_no = 0;
 			int vehicle_no = 1;
 			for(Node n:route){
+
 				if(n.isDepot()) {
+
 					if(route_no != 0)
 						toReturn2 += n.toString() + "\n";
+
 					if(route_no != route.length - 1) {
 						toReturn2 += "\n Vehicle " + vehicle_no + ": " + n.toString();
 						vehicle_no++;

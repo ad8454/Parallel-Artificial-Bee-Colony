@@ -75,10 +75,7 @@ public class SolutionVbl implements Vbl{
 			super(item);
 		}
 
-        /*public Max(){
-            super();
-            this.item = new Solution();
-        }*/
+
 		
 		/**
 		 * Reduce the given shared variable into this shared variable using the
